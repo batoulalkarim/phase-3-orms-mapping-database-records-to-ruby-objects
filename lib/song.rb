@@ -49,4 +49,33 @@ class Song
     song.save
   end
 
+  def self.new_from_db(row)
+    #self.new is equivalent to Song.new
+    self.new(id: row[0], name: row[1], album: row[2])
+  end
+
+  #this will return an array of rows form the database that matches our query
+  def self.all 
+    sql = <<-SQL
+    SELECT * 
+    FROM songs
+    SQL
+    #to create a new ruby object for each row, we will map
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end
+  end
+
+  def self.find_by_name(name)
+    sql = <<-SQL
+    SELECT *
+    FROM songs 
+    WHERE name = ?
+    LIMIT 1
+    SQL
+
+    DB[:conn].execute(sql, name).map do |row|
+      self.new_from_db(row)
+    end.first
+  end
 end
